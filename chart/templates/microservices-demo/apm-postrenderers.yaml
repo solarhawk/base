@@ -1,0 +1,47 @@
+{{- if and .Values.microservicesDemo.enabled .Values.microservicesDemo.apm.enabled }}
+{{- /*
+APM PostRenderers for Microservices Demo
+Injects OpenTelemetry auto-instrumentation annotations into each service deployment
+based on the programming language used by each service.
+
+Service Languages:
+- Java: adservice
+- Node.js: currencyservice, paymentservice
+- Python: emailservice, recommendationservice, loadgenerator
+- .NET: cartservice
+- Go: frontend, checkoutservice, productcatalogservice, shippingservice
+
+Note: Go auto-instrumentation requires eBPF and may have additional requirements.
+*/ -}}
+
+{{- $instrName := .Values.microservicesDemo.apm.instrumentationName }}
+{{- $instrNamespace := .Values.microservicesDemo.apm.instrumentationNamespace }}
+{{- $instrValue := printf "%s/%s" $instrNamespace $instrName }}
+
+{{- /* Define services by language */ -}}
+{{- $javaServices := list "adservice" }}
+{{- $nodejsServices := list "currencyservice" "paymentservice" }}
+{{- $pythonServices := list "emailservice" "recommendationservice" "loadgenerator" }}
+{{- $dotnetServices := list "cartservice" }}
+{{- $goServices := list "frontend" "checkoutservice" "productcatalogservice" "shippingservice" }}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-microservices-demo-apm-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: microservices-demo
+    app.kubernetes.io/component: "apm-config"
+    {{- include "commonLabels" . | nindent 4 }}
+data:
+  # This ConfigMap documents the APM configuration for microservices-demo
+  # The actual injection is done via postRenderers in the HelmRelease
+  instrumentation-name: {{ $instrName | quote }}
+  instrumentation-namespace: {{ $instrNamespace | quote }}
+  java-services: {{ $javaServices | join "," | quote }}
+  nodejs-services: {{ $nodejsServices | join "," | quote }}
+  python-services: {{ $pythonServices | join "," | quote }}
+  dotnet-services: {{ $dotnetServices | join "," | quote }}
+  go-services: {{ $goServices | join "," | quote }}
+{{- end }}

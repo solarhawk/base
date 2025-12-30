@@ -1,0 +1,36 @@
+{{- if and .Values.microservicesDemo.enabled (default true .Values.httpsRedirect) }}
+{{- $domainName := default .Values.domain .Values.hostname }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-to-https
+  namespace: microservices-demo
+  labels:
+    app.kubernetes.io/name: microservices-demo
+    {{- include "commonLabels" . | nindent 4 }}
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: microservices-demo-http-redirect
+  namespace: microservices-demo
+  labels:
+    app.kubernetes.io/name: microservices-demo
+    {{- include "commonLabels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`boutique.{{ $domainName }}`)
+      kind: Rule
+      middlewares:
+        - name: redirect-to-https
+          namespace: microservices-demo
+      services:
+        - name: frontend
+          port: 80
+{{- end }}

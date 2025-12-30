@@ -1,0 +1,10 @@
+{{- if .Values.microservicesDemo.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservices-demo
+  labels:
+    app.kubernetes.io/name: microservices-demo
+    app.kubernetes.io/component: "core"
+    {{- include "commonLabels" . | nindent 4 }}
+{{- end }}

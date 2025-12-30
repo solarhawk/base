@@ -1,0 +1,20 @@
+# Claude Code workspace
+.claude/
+
+# Helm build artifacts
+*.tgz
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml

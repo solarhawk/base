@@ -1,0 +1,23 @@
+{{- if and .Values.microservicesDemo.enabled .Values.certManager.enabled }}
+{{- $domainName := default .Values.domain .Values.hostname }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: microservices-demo-tls
+  namespace: microservices-demo
+  labels:
+    app.kubernetes.io/name: microservices-demo
+    app.kubernetes.io/component: "core"
+    {{- include "commonLabels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "1"
+spec:
+  secretName: microservices-demo-tls
+  issuerRef:
+    name: {{ .Values.clusterIssuer | default .Values.certManager.clusterIssuers.selfSignedCA.name }}
+    kind: ClusterIssuer
+  commonName: boutique.{{ $domainName }}
+  dnsNames:
+    - boutique.{{ $domainName }}
+{{- end }}
