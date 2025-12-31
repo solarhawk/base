@@ -23,14 +23,32 @@ A curated Kubernetes platform deployment using GitOps (FluxCD) that includes:
 - **kubectl** configured to access your cluster
 - **helm** (v3.x)
 
-### Fork This Repository
+### Create Your Own Repository
 
-**Important:** Fork this repository to your own GitHub account. You will configure your deployment in your fork - no secrets should ever be committed to git.
+**Important:** Create your own copy of this chart. You will configure your deployment in your repository - no secrets should ever be committed to git.
+
+**Option A: Fork on GitHub**
+
+1. Click "Fork" on GitHub to create your own copy
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/YOUR_FORK.git
+   cd YOUR_FORK
+   ```
+
+**Option B: Create a new repository**
 
 ```bash
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/YOUR_FORK.git
-cd YOUR_FORK
+# Clone this repository
+git clone https://github.com/solarhawk/base.git dorkomen-chart
+cd dorkomen-chart
+
+# Remove the original remote and add your own
+git remote remove origin
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+
+# Push to your repository
+git push -u origin main
 ```
 
 ---
