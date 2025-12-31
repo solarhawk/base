@@ -9,6 +9,12 @@
 # GitLab URL - connect to GitLab instance
 {{- if .Values.gitlab.enabled }}
 gitlabUrl: https://gitlab.{{ $domainName }}
+
+# Runner token from GitLab secret
+runnerToken: ""
+runners:
+  secret: gitlab-gitlab-runner-secret
+  secretNamespace: gitlab
 {{- end }}
 
 # Image configuration

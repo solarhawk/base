@@ -461,11 +461,8 @@ gitlabRunner:
   postRenderers: []
 
   values:
-    # GitLab URL - must be configured
-    gitlabUrl: ""
-
-    # Runner registration token (from GitLab)
-    runnerToken: ""
+    # GitLab URL and runner token are automatically configured
+    # when gitlab.enabled=true (see templates/gitlab-runner/values.yaml)
 
     # Runner configuration
     runners:
