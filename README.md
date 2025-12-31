@@ -10,7 +10,6 @@ A curated Kubernetes platform deployment using GitOps (FluxCD) that includes:
 - **GitLab Runner** - CI/CD runner
 - **ArgoCD** - GitOps continuous delivery
 - **n8n** - Workflow automation
-- **Microservices Demo** - Google Cloud's Online Boutique (11 microservices with APM)
 
 ---
 
@@ -149,9 +148,6 @@ argocd:
 
 n8n:
   enabled: true
-
-microservicesDemo:
-  enabled: true
 ```
 
 **Commit and push your configuration changes:**
@@ -259,7 +255,7 @@ kubectl annotate gitrepository dorkomen -n flux-system \
 2. eck-operator → Ready
 3. elastic-stack, opentelemetry-operator, argocd, n8n → Ready (parallel)
 4. gitlab → Ready (takes 5-10 minutes)
-5. gitlab-runner, microservices-demo → Ready
+5. gitlab-runner → Ready
 
 ## Step 7: Configure DNS
 
@@ -272,7 +268,6 @@ Add DNS A records pointing to your cluster's ingress IP:
 - `registry.yourdomain.com`
 - `n8n.yourdomain.com`
 - `kibana.yourdomain.com`
-- `boutique.yourdomain.com`
 
 ### Local Development
 
@@ -286,7 +281,6 @@ Add to your hosts file:
 127.0.0.1 gitlab.yourdomain.local
 127.0.0.1 n8n.yourdomain.local
 127.0.0.1 kibana.yourdomain.local
-127.0.0.1 boutique.yourdomain.local
 ```
 
 ## Step 8: Access Services
@@ -297,7 +291,6 @@ Add to your hosts file:
 | GitLab | https://gitlab.yourdomain.com | `root` / see below |
 | Kibana | https://kibana.yourdomain.com | `elastic` / see below |
 | n8n | https://n8n.yourdomain.com | Create on first login |
-| Online Boutique | https://boutique.yourdomain.com | None required |
 
 ### Get Credentials
 
@@ -375,9 +368,8 @@ Minimum recommended resources (all components enabled):
 | gitlab | 1000m | 4Gi |
 | argocd | 250m | 256Mi |
 | n8n | 100m | 256Mi |
-| microservices-demo | 1200m | 1.5Gi |
 
-**Total:** ~4 CPU cores, ~10GB RAM minimum
+**Total:** ~3 CPU cores, ~8GB RAM minimum
 
 ---
 
@@ -439,7 +431,7 @@ kubectl delete -f https://download.elastic.co/downloads/eck/3.2.0/crds.yaml
 
 # Clean up namespaces
 kubectl delete namespace cert-manager eck-operator gitlab gitlab-runner \
-  argocd n8n elastic-stack opentelemetry-operator-system microservices-demo
+  argocd n8n elastic-stack opentelemetry-operator-system
 ```
 
 ---
@@ -458,7 +450,6 @@ gitlab                         - GitLab CE + PostgreSQL + Redis + MinIO
 gitlab-runner                  - GitLab Runner
 argocd                         - ArgoCD
 n8n                            - n8n workflow automation
-microservices-demo             - Online Boutique (11 microservices)
 ```
 
 ### Component Dependencies
@@ -473,8 +464,6 @@ FluxCD + ECK CRDs (prerequisites)
             │       └── elastic-stack
             │
             ├── opentelemetry-operator
-            │       │
-            │       └── microservices-demo (with APM)
             │
             ├── argocd
             │
