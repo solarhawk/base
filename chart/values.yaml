@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 
 # Domain for ingress/services
-domain: dorkomen.us
+domain: yourdomain.local
 
 # ClusterIssuer to use for certificates (e.g., "dorkomen-ca", "letsencrypt-staging", "letsencrypt-prod")
 clusterIssuer: letsencrypt-prod
