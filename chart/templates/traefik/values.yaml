@@ -19,14 +19,54 @@ imagePullSecrets:
   - name: private-registry
 {{- end }}
 
-# Service configuration
+{{- if .Values.traefik.hostNetwork.enabled }}
+# HostNetwork mode - bind directly to node ports 80/443
+hostNetwork: true
+
+# Use DaemonSet for hostNetwork mode
+deployment:
+  kind: DaemonSet
+
+# Disable service when using hostNetwork
 service:
-  enabled: true
+  enabled: false
+
+# Ports with hostPort bindings
+ports:
+  web:
+    port: 8000
+    exposedPort: 80
+    hostPort: 80
+    expose:
+      default: true
+    protocol: TCP
+    {{- if .Values.httpsRedirect }}
+    redirectTo:
+      port: websecure
+    {{- end }}
+  websecure:
+    port: 8443
+    exposedPort: 443
+    hostPort: 443
+    expose:
+      default: true
+    protocol: TCP
+    tls:
+      enabled: true
+
+{{- else }}
+# Service mode (LoadBalancer or NodePort)
+service:
+  enabled: {{ .Values.traefik.service.enabled | default true }}
   type: {{ .Values.traefik.service.type | default "LoadBalancer" }}
   {{- if .Values.traefik.service.loadBalancerIP }}
   spec:
     loadBalancerIP: {{ .Values.traefik.service.loadBalancerIP }}
   {{- end }}
+
+# Replicas for Deployment mode
+deployment:
+  replicas: {{ .Values.traefik.replicas | default 1 }}
 
 # Ports configuration
 ports:
@@ -48,6 +88,7 @@ ports:
     protocol: TCP
     tls:
       enabled: true
+{{- end }}
 
 # Disable dashboard ingress route by default (security)
 ingressRoute:
@@ -69,10 +110,6 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
-
-# Replicas
-deployment:
-  replicas: {{ .Values.traefik.replicas | default 1 }}
 
 # Provider configuration
 providers:
