@@ -2,7 +2,7 @@
 # DORKOMEN CHART - DEFAULT VALUES
 # =============================================================================
 # A curated set of Kubernetes platform components for local/disconnected use
-# Packages: Cert-Manager, ECK-Operator, Elastic Stack, GitLab, GitLab Runner, ArgoCD, n8n
+# Packages: Traefik, Cert-Manager, ECK-Operator, Elastic Stack, GitLab, GitLab Runner, ArgoCD, n8n
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -92,6 +92,9 @@ helmRepositories:
   - name: open-telemetry
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
     type: default
+  - name: traefik
+    repository: https://traefik.github.io/charts
+    type: default
 
 # -----------------------------------------------------------------------------
 # Network Policies
@@ -105,6 +108,71 @@ networkPolicies:
 # =============================================================================
 # PACKAGES
 # =============================================================================
+
+# -----------------------------------------------------------------------------
+# Traefik (Ingress Controller)
+# -----------------------------------------------------------------------------
+# Traefik provides IngressRoute CRDs used by other packages in this chart.
+# If your cluster already has Traefik installed, you can leave this disabled.
+traefik:
+  enabled: false
+
+  sourceType: "helmRepo"
+
+  git:
+    repo: ""
+    path: chart
+    tag: ""
+    branch: main
+    existingSecret: ""
+    credentials:
+      username: ""
+      password: ""
+      caFile: ""
+      privateKey: ""
+      publicKey: ""
+      knownHosts: ""
+
+  helmRepo:
+    repoName: traefik
+    chartName: traefik
+    tag: "34.0.0"
+    cosignVerify: false
+
+  flux: {}
+  postRenderers: []
+
+  # Service configuration
+  service:
+    type: LoadBalancer
+    loadBalancerIP: ""
+
+  # Dashboard configuration
+  dashboard:
+    enabled: false
+
+  # Logging
+  logLevel: INFO
+  accessLogs:
+    enabled: false
+
+  # Replicas
+  replicas: 1
+
+  # Package-specific values passed to the upstream chart
+  values:
+    # Install CRDs
+    crds:
+      enabled: true
+
+    # Resources
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
 # -----------------------------------------------------------------------------
 # Cert-Manager (TLS Certificate Management)
