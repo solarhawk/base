@@ -244,7 +244,7 @@ metallb:
     name: default-pool
     # Example: addresses: ["192.168.1.240-192.168.1.250"]
     # Example: addresses: ["10.0.0.100/32", "10.0.0.101/32"]
-    addresses: ["10.255.0.251/32"]
+    addresses: ["10.255.0.251-10.255.0.252"]
 
   # Package-specific values passed to the upstream chart
   values: {}
