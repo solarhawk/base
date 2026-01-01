@@ -164,19 +164,18 @@ traefik:
   flux: {}
   postRenderers: []
 
-  # HostNetwork mode (Option 1 - default)
+  # HostNetwork mode (Option 1)
   # Binds Traefik directly to node ports 80/443
+  # WARNING: Conflicts with Harvester's nginx ingress on ports 80/443
   hostNetwork:
-    enabled: true
-
-  # Service configuration (Options 2 & 3)
-  # Disable when using hostNetwork mode
-  service:
     enabled: false
-    # type: LoadBalancer  # Requires MetalLB or cloud LB
-    # type: NodePort      # Uses high ports (30000-32767)
+
+  # Service configuration (Option 2 - default for Harvester)
+  # Uses MetalLB to assign a dedicated IP to Traefik
+  service:
+    enabled: true
     type: LoadBalancer
-    loadBalancerIP: ""
+    loadBalancerIP: ""  # Leave empty to auto-assign from MetalLB pool
 
   # Dashboard configuration
   dashboard:
