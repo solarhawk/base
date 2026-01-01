@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 
 # Domain for ingress/services
-domain: yourdomain.local
+domain: dorkomen.us
 
 # ClusterIssuer to use for certificates (e.g., "dorkomen-ca", "letsencrypt-staging", "letsencrypt-prod")
 clusterIssuer: letsencrypt-prod
@@ -164,7 +164,7 @@ certManager:
     letsencryptStaging:
       enabled: true
       name: letsencrypt-staging
-      email: "admin@yourdomain.com"
+      email: "admin@dorkomen.us"
       # For internal use, DNS-01 challenge is required
       # Configure your DNS provider below
       solver:
@@ -175,7 +175,7 @@ certManager:
           provider: "cloudflare"
           # Provider-specific configuration
           cloudflare:
-            email: "admin@yourdomain.com"
+            email: "admin@dorkomen.us"
             apiTokenSecretRef:
               name: cloudflare-api-token
               key: api-token
@@ -193,13 +193,13 @@ certManager:
     letsencrypt:
       enabled: true
       name: letsencrypt-prod
-      email: "admin@yourdomain.com"
+      email: "admin@dorkomen.us"
       solver:
         type: dns01
         dns01:
           provider: "cloudflare"
           cloudflare:
-            email: "admin@yourdomain.com"
+            email: "admin@dorkomen.us"
             apiTokenSecretRef:
               name: cloudflare-api-token
               key: api-token
