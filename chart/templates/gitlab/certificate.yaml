@@ -3,7 +3,7 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: gitlab-tls
+  name: gitlab-wildcard-tls
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
@@ -13,7 +13,7 @@ metadata:
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "1"
 spec:
-  secretName: gitlab-tls
+  secretName: gitlab-wildcard-tls
   issuerRef:
     name: {{ .Values.clusterIssuer | default .Values.certManager.clusterIssuers.selfSignedCA.name }}
     kind: ClusterIssuer
@@ -22,4 +22,5 @@ spec:
     - gitlab.{{ $domainName }}
     - registry.{{ $domainName }}
     - minio.{{ $domainName }}
+    - kas.{{ $domainName }}
 {{- end }}

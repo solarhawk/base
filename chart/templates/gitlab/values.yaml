@@ -35,7 +35,6 @@ global:
       traefik.ingress.kubernetes.io/router.middlewares: gitlab-redirect-to-https@kubernetescrd
     tls:
       enabled: true
-      secretName: gitlab-tls
 
   # Use bundled MinIO for object storage
   minio:
