@@ -2,7 +2,7 @@
 # DORKOMEN CHART - DEFAULT VALUES
 # =============================================================================
 # A curated set of Kubernetes platform components for local/disconnected use
-# Packages: Cert-Manager, ECK-Operator, Elastic Stack, GitLab, GitLab Runner, ArgoCD, n8n
+# Packages: Traefik, MetalLB, Cert-Manager, ECK-Operator, Elastic Stack, GitLab, GitLab Runner, ArgoCD, n8n
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 
 # Domain for ingress/services
-domain: yourdomain.local
+domain: dorkomen.us
 
 # ClusterIssuer to use for certificates (e.g., "dorkomen-ca", "letsencrypt-staging", "letsencrypt-prod")
 clusterIssuer: letsencrypt-prod
@@ -92,6 +92,12 @@ helmRepositories:
   - name: open-telemetry
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
     type: default
+  - name: traefik
+    repository: https://traefik.github.io/charts
+    type: default
+  - name: metallb
+    repository: https://metallb.github.io/metallb
+    type: default
 
 # -----------------------------------------------------------------------------
 # Network Policies
@@ -105,6 +111,143 @@ networkPolicies:
 # =============================================================================
 # PACKAGES
 # =============================================================================
+
+# -----------------------------------------------------------------------------
+# Traefik (Ingress Controller)
+# -----------------------------------------------------------------------------
+# Traefik provides IngressRoute CRDs used by other packages in this chart.
+# If your cluster already has Traefik installed, you can leave this disabled.
+#
+# Network Mode Options:
+# ---------------------
+# Option 1: hostNetwork (default, recommended for single-node/bare-metal)
+#   - Traefik binds directly to node ports 80/443
+#   - No LoadBalancer or NodePort required
+#   - Access services at: https://<node-ip>/
+#   - Set: hostNetwork.enabled=true, service.enabled=false
+#
+# Option 2: LoadBalancer (requires MetalLB or cloud provider)
+#   - External IP assigned to Traefik service
+#   - Access services at: https://<external-ip>/
+#   - Set: hostNetwork.enabled=false, service.enabled=true, service.type=LoadBalancer
+#
+# Option 3: NodePort (works anywhere, non-standard ports)
+#   - Access via high ports (e.g., 31080, 31443)
+#   - Access services at: https://<node-ip>:<nodeport>/
+#   - Set: hostNetwork.enabled=false, service.enabled=true, service.type=NodePort
+#
+traefik:
+  enabled: true
+
+  sourceType: "helmRepo"
+
+  git:
+    repo: ""
+    path: chart
+    tag: ""
+    branch: main
+    existingSecret: ""
+    credentials:
+      username: ""
+      password: ""
+      caFile: ""
+      privateKey: ""
+      publicKey: ""
+      knownHosts: ""
+
+  helmRepo:
+    repoName: traefik
+    chartName: traefik
+    tag: "34.0.0"
+    cosignVerify: false
+
+  flux: {}
+  postRenderers: []
+
+  # HostNetwork mode (Option 1)
+  # Binds Traefik directly to node ports 80/443
+  # WARNING: Conflicts with Harvester's nginx ingress on ports 80/443
+  hostNetwork:
+    enabled: false
+
+  # Service configuration (Option 2 - default for Harvester)
+  # Uses MetalLB to assign a dedicated IP to Traefik
+  service:
+    enabled: true
+    type: LoadBalancer
+    loadBalancerIP: ""  # Leave empty to auto-assign from MetalLB pool
+
+  # Dashboard configuration
+  dashboard:
+    enabled: false
+
+  # Logging
+  logLevel: INFO
+  accessLogs:
+    enabled: false
+
+  # Replicas (ignored when using DaemonSet with hostNetwork)
+  replicas: 1
+
+  # Package-specific values passed to the upstream chart
+  values:
+    # Install CRDs
+    crds:
+      enabled: true
+
+    # Resources
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# -----------------------------------------------------------------------------
+# MetalLB (Bare-metal Load Balancer)
+# -----------------------------------------------------------------------------
+# MetalLB provides LoadBalancer service support for bare-metal clusters.
+# Required when using Traefik with service.type=LoadBalancer on bare-metal.
+# Not needed when using hostNetwork mode (default).
+metallb:
+  enabled: true
+
+  sourceType: "helmRepo"
+
+  git:
+    repo: ""
+    path: chart
+    tag: ""
+    branch: main
+    existingSecret: ""
+    credentials:
+      username: ""
+      password: ""
+      caFile: ""
+      privateKey: ""
+      publicKey: ""
+      knownHosts: ""
+
+  helmRepo:
+    repoName: metallb
+    chartName: metallb
+    tag: "0.14.9"
+    cosignVerify: false
+
+  flux: {}
+  postRenderers: []
+
+  # IP Address Pool configuration
+  # Define the range of IPs MetalLB can assign to LoadBalancer services
+  addressPool:
+    name: default-pool
+    # Example: addresses: ["192.168.1.240-192.168.1.250"]
+    # Example: addresses: ["10.0.0.100/32", "10.0.0.101/32"]
+    addresses: ["10.255.0.251-10.255.0.252"]
+
+  # Package-specific values passed to the upstream chart
+  values: {}
 
 # -----------------------------------------------------------------------------
 # Cert-Manager (TLS Certificate Management)
@@ -164,7 +307,7 @@ certManager:
     letsencryptStaging:
       enabled: true
       name: letsencrypt-staging
-      email: "admin@yourdomain.com"
+      email: "admin@dorkomen.us"
       # For internal use, DNS-01 challenge is required
       # Configure your DNS provider below
       solver:
@@ -175,7 +318,7 @@ certManager:
           provider: "cloudflare"
           # Provider-specific configuration
           cloudflare:
-            email: "admin@yourdomain.com"
+            email: "admin@dorkomen.us"
             apiTokenSecretRef:
               name: cloudflare-api-token
               key: api-token
@@ -193,13 +336,13 @@ certManager:
     letsencrypt:
       enabled: true
       name: letsencrypt-prod
-      email: "admin@yourdomain.com"
+      email: "admin@dorkomen.us"
       solver:
         type: dns01
         dns01:
           provider: "cloudflare"
           cloudflare:
-            email: "admin@yourdomain.com"
+            email: "admin@dorkomen.us"
             apiTokenSecretRef:
               name: cloudflare-api-token
               key: api-token
