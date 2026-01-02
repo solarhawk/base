@@ -31,8 +31,9 @@ global:
     enabled: true
     class: traefik
     annotations:
+      kubernetes.io/ingress.provider: traefik
       traefik.ingress.kubernetes.io/router.entrypoints: websecure
-      traefik.ingress.kubernetes.io/router.middlewares: gitlab-redirect-to-https@kubernetescrd
+      traefik.ingress.kubernetes.io/router.tls: "true"
     tls:
       enabled: true
 
