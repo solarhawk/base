@@ -9,6 +9,12 @@
 crds:
   enabled: true
 
+# IngressClass configuration
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  name: traefik
+
 # Image configuration
 image:
   repository: traefik
