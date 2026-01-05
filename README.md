@@ -35,31 +35,32 @@ This chart uses **Kustomize overlays** for multi-environment support. Choose the
 ### Repository Structure
 
 ```
-base/                           # Base Helm chart (do not deploy directly)
+base/                           # Base Kustomize resources (do not deploy directly)
 ├── chart/                      # Helm chart with templates
 │   ├── values.yaml             # Default values (override in overlay)
 │   └── templates/
+├── helmrelease.yaml            # FluxCD HelmRelease resource
 └── kustomization.yaml
 
 overlays/
 ├── rancher-desktop/            # Local development overlay
 │   ├── kustomization.yaml
-│   └── values-patch.yaml       # Rancher Desktop specific settings
+│   └── helmrelease-patch.yaml  # Rancher Desktop specific settings
 │
 └── harvester/                  # Harvester overlay
     ├── kustomization.yaml
-    └── values-patch.yaml       # Harvester specific settings (edit this!)
+    └── helmrelease-patch.yaml  # Harvester specific settings (edit this!)
 ```
 
 ### Configuring Your Environment
 
 1. **Choose your overlay** based on your target cluster
-2. **Edit the overlay's `values-patch.yaml`** to set your domain and other settings
+2. **Edit the overlay's `helmrelease-patch.yaml`** to set your domain and other settings
 
-**For Harvester** (`overlays/harvester/values-patch.yaml`):
+**For Harvester** (`overlays/harvester/helmrelease-patch.yaml`):
 ```yaml
-# Replace dorkomen.us with your domain
-domain: yourdomain.com
+# Replace yourdomain.local with your domain
+domain: yourdomain.local
 
 # Set your MetalLB IP range
 metallb:
@@ -68,7 +69,7 @@ metallb:
       - "10.255.0.240-10.255.0.250"  # Your network's available IPs
 ```
 
-**For Rancher Desktop** (`overlays/rancher-desktop/values-patch.yaml`):
+**For Rancher Desktop** (`overlays/rancher-desktop/helmrelease-patch.yaml`):
 ```yaml
 # Local development domain (uses hosts file)
 domain: dev.yourdomain.local
@@ -76,26 +77,42 @@ domain: dev.yourdomain.local
 
 ### Hosts File Setup
 
-For local development, add entries to your hosts file:
+For local development or when DNS is not configured, add entries to your hosts file.
 
-**Windows:** `C:\Windows\System32\drivers\etc\hosts` (run Notepad as Administrator)
-**Linux/Mac:** `/etc/hosts`
+#### Windows
+
+1. Open Notepad **as Administrator** (right-click -> "Run as administrator")
+2. Open File -> Open and navigate to `C:\Windows\System32\drivers\etc\hosts`
+3. Add the entries below and save
+
+#### Linux / macOS
+
+```bash
+sudo nano /etc/hosts
+# Add entries below, then Ctrl+O to save, Ctrl+X to exit
+```
+
+#### Hosts Entries
 
 **For Rancher Desktop (dev.yourdomain.local):**
 ```
 127.0.0.1 argocd.dev.yourdomain.local
 127.0.0.1 gitlab.dev.yourdomain.local
 127.0.0.1 registry.dev.yourdomain.local
+127.0.0.1 minio.dev.yourdomain.local
+127.0.0.1 kas.dev.yourdomain.local
 127.0.0.1 n8n.dev.yourdomain.local
 127.0.0.1 kibana.dev.yourdomain.local
 ```
 
 **For Harvester (using MetalLB IP):**
 ```
-# Replace 10.255.0.240 with your MetalLB assigned IP
+# Replace 10.255.0.240 with your MetalLB assigned IP (check with: kubectl get svc -n kube-system traefik)
 10.255.0.240 argocd.yourdomain.local
 10.255.0.240 gitlab.yourdomain.local
 10.255.0.240 registry.yourdomain.local
+10.255.0.240 minio.yourdomain.local
+10.255.0.240 kas.yourdomain.local
 10.255.0.240 n8n.yourdomain.local
 10.255.0.240 kibana.yourdomain.local
 ```
@@ -197,14 +214,14 @@ No secrets required. Self-signed CA is created automatically.
 
 ## Step 4: Configure Your Deployment
 
-Edit the appropriate overlay's `values-patch.yaml`:
+Edit the appropriate overlay's `helmrelease-patch.yaml`:
 
-**For Rancher Desktop:** `overlays/rancher-desktop/values-patch.yaml`
-**For Harvester:** `overlays/harvester/values-patch.yaml`
+**For Rancher Desktop:** `overlays/rancher-desktop/helmrelease-patch.yaml`
+**For Harvester:** `overlays/harvester/helmrelease-patch.yaml`
 
 ```yaml
-# Set your domain (replace dorkomen.us)
-domain: yourdomain.com
+# Set your domain
+domain: yourdomain.local
 
 # Choose certificate issuer
 # Options: "dorkomen-ca" (self-signed), "letsencrypt-staging", "letsencrypt-prod"
@@ -408,8 +425,8 @@ These secrets are created by the chart and do not require manual setup:
 With GitOps, updates are automatic:
 
 ```bash
-# Make changes to your overlay's values-patch.yaml
-vim overlays/rancher-desktop/values-patch.yaml
+# Make changes to your overlay's helmrelease-patch.yaml
+vim overlays/rancher-desktop/helmrelease-patch.yaml
 
 # Commit and push
 git add . && git commit -m "Update configuration" && git push
