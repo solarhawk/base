@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base kustomization for Dorkomen Chart
+# This serves as the foundation for environment-specific overlays.
+#
+# Usage:
+#   Do not deploy this directly. Use an overlay instead:
+#   - overlays/rancher-desktop  (local development)
+#   - overlays/harvester        (Harvester HCI cluster)
+
+resources: []
+
+# The Helm chart is rendered via FluxCD HelmRelease, not kustomize directly.
+# Overlays patch the values for environment-specific configuration.
+
+configMapGenerator:
+  - name: dorkomen-base-values
+    files:
+      - values.yaml=chart/values.yaml

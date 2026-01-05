@@ -13,12 +13,101 @@ A curated Kubernetes platform deployment using GitOps (FluxCD) that includes:
 
 ---
 
+## Environment Overlays
+
+This chart uses **Kustomize overlays** for multi-environment support. Choose the overlay that matches your deployment target:
+
+| Environment | Overlay Path | Description |
+|-------------|--------------|-------------|
+| **Rancher Desktop** | `overlays/rancher-desktop` | Local development with built-in Traefik |
+| **Harvester** | `overlays/harvester` | Harvester HCI cluster with Traefik (secondary) + MetalLB |
+
+### Harvester Architecture Note
+
+> **IMPORTANT:** Harvester uses a built-in nginx ingress controller on ports 80/443 for the Harvester admin UI. **DO NOT replace or disable nginx** - doing so will break the Harvester admin interface.
+>
+> The Harvester overlay deploys Traefik as a **secondary** ingress controller that runs alongside nginx:
+> - **nginx** remains on the node's primary IP (ports 80/443) for Harvester admin
+> - **Traefik** gets a separate LoadBalancer IP from MetalLB for your applications
+>
+> This dual-ingress setup keeps Harvester functional while providing Traefik for your workloads.
+
+### Repository Structure
+
+```
+base/                           # Base Helm chart (do not deploy directly)
+├── chart/                      # Helm chart with templates
+│   ├── values.yaml             # Default values (override in overlay)
+│   └── templates/
+└── kustomization.yaml
+
+overlays/
+├── rancher-desktop/            # Local development overlay
+│   ├── kustomization.yaml
+│   └── values-patch.yaml       # Rancher Desktop specific settings
+│
+└── harvester/                  # Harvester overlay
+    ├── kustomization.yaml
+    └── values-patch.yaml       # Harvester specific settings (edit this!)
+```
+
+### Configuring Your Environment
+
+1. **Choose your overlay** based on your target cluster
+2. **Edit the overlay's `values-patch.yaml`** to set your domain and other settings
+
+**For Harvester** (`overlays/harvester/values-patch.yaml`):
+```yaml
+# Replace dorkomen.us with your domain
+domain: yourdomain.com
+
+# Set your MetalLB IP range
+metallb:
+  addressPool:
+    addresses:
+      - "10.255.0.240-10.255.0.250"  # Your network's available IPs
+```
+
+**For Rancher Desktop** (`overlays/rancher-desktop/values-patch.yaml`):
+```yaml
+# Local development domain (uses hosts file)
+domain: dorkomen.local
+```
+
+### Hosts File Setup
+
+For local development, add entries to your hosts file:
+
+**Windows:** `C:\Windows\System32\drivers\etc\hosts` (run Notepad as Administrator)
+**Linux/Mac:** `/etc/hosts`
+
+**For Rancher Desktop (dorkomen.local):**
+```
+127.0.0.1 argocd.dorkomen.local
+127.0.0.1 gitlab.dorkomen.local
+127.0.0.1 registry.dorkomen.local
+127.0.0.1 n8n.dorkomen.local
+127.0.0.1 kibana.dorkomen.local
+```
+
+**For Harvester (using MetalLB IP):**
+```
+# Replace 10.255.0.240 with your MetalLB assigned IP
+10.255.0.240 argocd.yourdomain.local
+10.255.0.240 gitlab.yourdomain.local
+10.255.0.240 registry.yourdomain.local
+10.255.0.240 n8n.yourdomain.local
+10.255.0.240 kibana.yourdomain.local
+```
+
+---
+
 ## Quick Start
 
 ### Prerequisites
 
 - **Kubernetes Cluster** (v1.28+) - Rancher Desktop, k3s, or compatible
-- **Traefik Ingress Controller** (included with k3s/Rancher Desktop)
+- **Traefik Ingress Controller** (included with k3s/Rancher Desktop, deployed via overlay for Harvester)
 - **kubectl** configured to access your cluster
 - **helm** (v3.x)
 
@@ -87,9 +176,9 @@ kubectl create secret generic cloudflare-api-token \
 ```
 
 To create a Cloudflare API token:
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → My Profile → API Tokens
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) -> My Profile -> API Tokens
 2. Create token with permissions: `Zone:Zone:Read` and `Zone:DNS:Edit`
-3. Zone Resources: Include → Specific zone → your domain
+3. Zone Resources: Include -> Specific zone -> your domain
 
 ### Option B: Let's Encrypt with Route53 (Production)
 
@@ -108,21 +197,18 @@ No secrets required. Self-signed CA is created automatically.
 
 ## Step 4: Configure Your Deployment
 
-Edit `chart/values.yaml` in your fork:
+Edit the appropriate overlay's `values-patch.yaml`:
+
+**For Rancher Desktop:** `overlays/rancher-desktop/values-patch.yaml`
+**For Harvester:** `overlays/harvester/values-patch.yaml`
 
 ```yaml
-# Set your domain
+# Set your domain (replace dorkomen.us)
 domain: yourdomain.com
 
 # Choose certificate issuer
 # Options: "dorkomen-ca" (self-signed), "letsencrypt-staging", "letsencrypt-prod"
-clusterIssuer: letsencrypt-prod
-
-# Update email for Let's Encrypt
-certManager:
-  clusterIssuers:
-    letsencrypt:
-      email: "your-email@example.com"
+clusterIssuer: dorkomen-ca
 ```
 
 ### Enable/Disable Components
@@ -153,7 +239,7 @@ n8n:
 **Commit and push your configuration changes:**
 
 ```bash
-git add chart/values.yaml
+git add overlays/
 git commit -m "Configure for my environment"
 git push origin main
 ```
@@ -205,41 +291,51 @@ spec:
 EOF
 ```
 
-### Create HelmRelease
+### Create Kustomization (for overlay deployment)
+
+**For Rancher Desktop:**
 
 ```bash
 kubectl apply -f - <<'EOF'
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
 metadata:
   name: dorkomen
   namespace: flux-system
 spec:
   interval: 10m
-  timeout: 15m
-  chart:
-    spec:
-      chart: ./chart
-      sourceRef:
-        kind: GitRepository
-        name: dorkomen
-        namespace: flux-system
-  install:
-    remediation:
-      retries: 3
-  upgrade:
-    remediation:
-      retries: 3
-      remediateLastFailure: true
-    cleanupOnFail: true
+  path: ./overlays/rancher-desktop
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: dorkomen
+EOF
+```
+
+**For Harvester:**
+
+```bash
+kubectl apply -f - <<'EOF'
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dorkomen
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./overlays/harvester
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: dorkomen
 EOF
 ```
 
 ## Step 6: Monitor Deployment
 
 ```bash
-# Watch HelmReleases reconcile
-kubectl get helmreleases -A -w
+# Watch Kustomizations reconcile
+kubectl get kustomizations -A -w
 
 # Check all pods
 kubectl get pods -A
@@ -251,46 +347,20 @@ kubectl annotate gitrepository dorkomen -n flux-system \
 
 ### Expected Deployment Order
 
-1. cert-manager → Ready
-2. eck-operator → Ready
-3. elastic-stack, opentelemetry-operator, argocd, n8n → Ready (parallel)
-4. gitlab → Ready (takes 5-10 minutes)
-5. gitlab-runner → Ready
+1. cert-manager -> Ready
+2. eck-operator -> Ready
+3. elastic-stack, opentelemetry-operator, argocd, n8n -> Ready (parallel)
+4. gitlab -> Ready (takes 5-10 minutes)
+5. gitlab-runner -> Ready
 
-## Step 7: Configure DNS
-
-### Production (Real Domain)
-
-Add DNS A records pointing to your cluster's ingress IP:
-
-- `argocd.yourdomain.com`
-- `gitlab.yourdomain.com`
-- `registry.yourdomain.com`
-- `n8n.yourdomain.com`
-- `kibana.yourdomain.com`
-
-### Local Development
-
-Add to your hosts file:
-
-**Windows:** `C:\Windows\System32\drivers\etc\hosts`
-**Linux/Mac:** `/etc/hosts`
-
-```
-127.0.0.1 argocd.yourdomain.local
-127.0.0.1 gitlab.yourdomain.local
-127.0.0.1 n8n.yourdomain.local
-127.0.0.1 kibana.yourdomain.local
-```
-
-## Step 8: Access Services
+## Step 7: Access Services
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| ArgoCD | https://argocd.yourdomain.com | `admin` / see below |
-| GitLab | https://gitlab.yourdomain.com | `root` / see below |
-| Kibana | https://kibana.yourdomain.com | `elastic` / see below |
-| n8n | https://n8n.yourdomain.com | Create on first login |
+| ArgoCD | https://argocd.dorkomen.local | `admin` / see below |
+| GitLab | https://gitlab.dorkomen.local | `root` / see below |
+| Kibana | https://kibana.dorkomen.local | `elastic` / see below |
+| n8n | https://n8n.dorkomen.local | Create on first login |
 
 ### Get Credentials
 
@@ -338,8 +408,8 @@ These secrets are created by the chart and do not require manual setup:
 With GitOps, updates are automatic:
 
 ```bash
-# Make changes to values.yaml
-vim chart/values.yaml
+# Make changes to your overlay's values-patch.yaml
+vim overlays/rancher-desktop/values-patch.yaml
 
 # Commit and push
 git add . && git commit -m "Update configuration" && git push
@@ -375,16 +445,17 @@ Minimum recommended resources (all components enabled):
 
 ## Troubleshooting
 
-### Check HelmRelease Status
+### Check Kustomization Status
 
 ```bash
-kubectl get helmreleases -A
-kubectl describe helmrelease <name> -n flux-system
+kubectl get kustomizations -A
+kubectl describe kustomization dorkomen -n flux-system
 ```
 
 ### Check Flux Logs
 
 ```bash
+kubectl logs -n flux-system deployment/kustomize-controller
 kubectl logs -n flux-system deployment/helm-controller
 ```
 
@@ -392,7 +463,7 @@ kubectl logs -n flux-system deployment/helm-controller
 
 ```bash
 kubectl get clusterissuers
-kubectl describe clusterissuer letsencrypt-prod
+kubectl describe clusterissuer dorkomen-ca
 ```
 
 ### Check Certificates
@@ -409,8 +480,8 @@ kubectl describe certificate <name> -n <namespace>
 kubectl annotate gitrepository dorkomen -n flux-system \
   reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
 
-# Reconcile specific HelmRelease
-kubectl annotate helmrelease <name> -n flux-system \
+# Reconcile Kustomization
+kubectl annotate kustomization dorkomen -n flux-system \
   reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
 ```
 
@@ -419,8 +490,8 @@ kubectl annotate helmrelease <name> -n flux-system \
 ## Uninstalling
 
 ```bash
-# Remove HelmRelease and GitRepository
-kubectl delete helmrelease dorkomen -n flux-system
+# Remove Kustomization and GitRepository
+kubectl delete kustomization dorkomen -n flux-system
 kubectl delete gitrepository dorkomen -n flux-system
 
 # Remove FluxCD (optional)
@@ -441,7 +512,7 @@ kubectl delete namespace cert-manager eck-operator gitlab gitlab-runner \
 ### Namespace Layout
 
 ```
-flux-system                    - FluxCD controllers + HelmReleases
+flux-system                    - FluxCD controllers + Kustomizations
 cert-manager                   - Certificate management
 eck-operator                   - ECK Operator 3.x
 elastic-stack                  - Elasticsearch, Kibana, Fleet, Agent, APM
@@ -456,22 +527,22 @@ n8n                            - n8n workflow automation
 
 ```
 FluxCD + ECK CRDs (prerequisites)
-    │
-    └── cert-manager
-            │
-            ├── eck-operator
-            │       │
-            │       └── elastic-stack
-            │
-            ├── opentelemetry-operator
-            │
-            ├── argocd
-            │
-            ├── n8n
-            │
-            └── gitlab
-                    │
-                    └── gitlab-runner
+    |
+    +-- cert-manager
+            |
+            +-- eck-operator
+            |       |
+            |       +-- elastic-stack
+            |
+            +-- opentelemetry-operator
+            |
+            +-- argocd
+            |
+            +-- n8n
+            |
+            +-- gitlab
+                    |
+                    +-- gitlab-runner
 ```
 
 ---
