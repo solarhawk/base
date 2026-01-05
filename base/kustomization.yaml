@@ -9,12 +9,5 @@ kind: Kustomization
 #   - overlays/rancher-desktop  (local development)
 #   - overlays/harvester        (Harvester HCI cluster)
 
-resources: []
-
-# The Helm chart is rendered via FluxCD HelmRelease, not kustomize directly.
-# Overlays patch the values for environment-specific configuration.
-
-configMapGenerator:
-  - name: dorkomen-values
-    files:
-      - values.yaml=chart/values.yaml
+resources:
+  - helmrelease.yaml

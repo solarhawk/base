@@ -10,11 +10,8 @@ kind: Kustomization
 resources:
   - ../../base
 
-configMapGenerator:
-  - name: dorkomen-values
-    behavior: merge
-    files:
-      - values-patch.yaml
+patches:
+  - path: helmrelease-patch.yaml
 
 commonLabels:
   environment: rancher-desktop
