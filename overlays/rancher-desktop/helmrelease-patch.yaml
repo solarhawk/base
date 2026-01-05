@@ -57,11 +57,41 @@ spec:
             memory: 768Mi
             cpu: 250m
 
+    # -----------------------------------------------------------------------------
+    # Package-specific domain overrides
+    # -----------------------------------------------------------------------------
+    # These override the hardcoded domains in the base values.yaml
     gitlab:
       enabled: true
+      values:
+        global:
+          hosts:
+            domain: dev.yourdomain.local
 
     argocd:
       enabled: true
+      values:
+        global:
+          domain: argocd.dev.yourdomain.local
+        server:
+          ingress:
+            hosts:
+              - argocd.dev.yourdomain.local
+            tls:
+              - secretName: argocd-tls
+                hosts:
+                  - argocd.dev.yourdomain.local
 
     n8n:
       enabled: true
+      values:
+        ingress:
+          hosts:
+            - host: n8n.dev.yourdomain.local
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: n8n-tls
+              hosts:
+                - n8n.dev.yourdomain.local
