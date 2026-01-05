@@ -15,6 +15,6 @@ resources: []
 # Overlays patch the values for environment-specific configuration.
 
 configMapGenerator:
-  - name: dorkomen-base-values
+  - name: dorkomen-values
     files:
       - values.yaml=chart/values.yaml
