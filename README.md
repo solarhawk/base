@@ -71,7 +71,7 @@ metallb:
 **For Rancher Desktop** (`overlays/rancher-desktop/values-patch.yaml`):
 ```yaml
 # Local development domain (uses hosts file)
-domain: dorkomen.local
+domain: dev.yourdomain.local
 ```
 
 ### Hosts File Setup
@@ -81,13 +81,13 @@ For local development, add entries to your hosts file:
 **Windows:** `C:\Windows\System32\drivers\etc\hosts` (run Notepad as Administrator)
 **Linux/Mac:** `/etc/hosts`
 
-**For Rancher Desktop (dorkomen.local):**
+**For Rancher Desktop (dev.yourdomain.local):**
 ```
-127.0.0.1 argocd.dorkomen.local
-127.0.0.1 gitlab.dorkomen.local
-127.0.0.1 registry.dorkomen.local
-127.0.0.1 n8n.dorkomen.local
-127.0.0.1 kibana.dorkomen.local
+127.0.0.1 argocd.dev.yourdomain.local
+127.0.0.1 gitlab.dev.yourdomain.local
+127.0.0.1 registry.dev.yourdomain.local
+127.0.0.1 n8n.dev.yourdomain.local
+127.0.0.1 kibana.dev.yourdomain.local
 ```
 
 **For Harvester (using MetalLB IP):**
@@ -357,10 +357,10 @@ kubectl annotate gitrepository dorkomen -n flux-system \
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| ArgoCD | https://argocd.dorkomen.local | `admin` / see below |
-| GitLab | https://gitlab.dorkomen.local | `root` / see below |
-| Kibana | https://kibana.dorkomen.local | `elastic` / see below |
-| n8n | https://n8n.dorkomen.local | Create on first login |
+| ArgoCD | https://argocd.dev.yourdomain.local | `admin` / see below |
+| GitLab | https://gitlab.dev.yourdomain.local | `root` / see below |
+| Kibana | https://kibana.dev.yourdomain.local | `elastic` / see below |
+| n8n | https://n8n.dev.yourdomain.local | Create on first login |
 
 ### Get Credentials
 
