@@ -425,21 +425,31 @@ kubectl annotate gitrepository dorkomen -n flux-system \
 
 Minimum recommended resources (all components enabled):
 
-| Component | CPU Request | Memory Request |
-|-----------|-------------|----------------|
-| cert-manager | 50m | 64Mi |
-| eck-operator | 100m | 150Mi |
-| elasticsearch | 500m | 1Gi |
-| kibana | 250m | 512Mi |
-| apm-server | 100m | 256Mi |
-| fleet-server | 100m | 256Mi |
-| elastic-agent | 200m | 1Gi |
-| opentelemetry-operator | 100m | 128Mi |
-| gitlab | 1000m | 4Gi |
-| argocd | 250m | 256Mi |
-| n8n | 100m | 256Mi |
+| Component | CPU Request | Memory Request | Memory Limit | Notes |
+|-----------|-------------|----------------|--------------|-------|
+| cert-manager | 50m | 64Mi | 128Mi | |
+| eck-operator | 100m | 150Mi | 256Mi | |
+| elasticsearch | 500m | 1Gi | 2Gi | Single node; increase for HA |
+| kibana | 250m | 768Mi | 1Gi | **Requires 768Mi+ to start** |
+| apm-server | 100m | 256Mi | 512Mi | |
+| fleet-server | 100m | 256Mi | 512Mi | |
+| elastic-agent | 200m | 512Mi | 1Gi | |
+| opentelemetry-operator | 100m | 128Mi | 256Mi | |
+| gitlab | 1000m | 4Gi | 6Gi | Includes all subcomponents |
+| gitlab-runner | 100m | 128Mi | 256Mi | |
+| argocd | 250m | 256Mi | 512Mi | |
+| n8n | 100m | 256Mi | 512Mi | |
 
-**Total:** ~3 CPU cores, ~8GB RAM minimum
+**Minimum Total:** ~3 CPU cores, ~8GB RAM
+
+> **Important:** Kibana 9.x requires at least 768Mi of memory to start successfully. The default 512Mi limit will cause OOM (out of memory) crashes. The overlays are configured with appropriate limits, but if you customize resources, ensure Kibana has sufficient memory.
+
+### Environment-Specific Resources
+
+The overlays configure different resource allocations:
+
+- **Rancher Desktop:** Lighter resources for local development (~8GB RAM total)
+- **Harvester:** Production-ready resources for cluster deployment (~16GB+ RAM recommended)
 
 ---
 

@@ -51,11 +51,11 @@ spec:
         replicas: 1
         resources:
           limits:
-            memory: 512Mi
-            cpu: 500m
+            memory: 1Gi
+            cpu: 1000m
           requests:
-            memory: 256Mi
-            cpu: 100m
+            memory: 768Mi
+            cpu: 250m
 
     gitlab:
       enabled: true
