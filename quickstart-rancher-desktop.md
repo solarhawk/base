@@ -102,7 +102,7 @@ Add to `C:\Windows\System32\drivers\etc\hosts` (run Notepad as Administrator):
 
 ```bash
 # ArgoCD admin password
-kubectl -n argocd get secret argocd-argocd-initial-admin-secret \
+kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d && echo
 
 # GitLab root password
