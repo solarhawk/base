@@ -136,6 +136,15 @@ kubectl annotate helmrelease <name> -n flux-system \
   reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
 ```
 
+### HelmRelease Stuck at Retry Limit
+
+If a HelmRelease has exhausted its retry attempts and won't reconcile, suspend and resume it:
+
+```bash
+kubectl patch helmrelease <name> -n flux-system --type=merge -p '{"spec":{"suspend":true}}'
+kubectl patch helmrelease <name> -n flux-system --type=merge -p '{"spec":{"suspend":false}}'
+```
+
 ### Check HelmRelease Status
 
 ```bash
