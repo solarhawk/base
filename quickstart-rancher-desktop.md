@@ -1,6 +1,8 @@
-# Dorkomen Chart Quick Start
+# Dorkomen Chart Quick Start (Rancher Desktop)
 
 Commands to deploy the Dorkomen chart on a fresh Rancher Desktop cluster.
+
+> **Important**: The GitRepository and Kustomization resources must be named `dorkomen` exactly, as the HelmRelease references this name in its sourceRef.
 
 ## Prerequisites
 
@@ -114,6 +116,17 @@ kubectl -n elastic-stack get secret elasticsearch-es-elastic-user \
 
 ## Troubleshooting
 
+### Dorkomen HelmRelease Fails on First Install
+
+The `dorkomen` HelmRelease may fail on initial deployment with an error about `Certificate` resources not found. This occurs because cert-manager CRDs are not yet available when the chart tries to create Certificate resources.
+
+**Solution**: Wait for cert-manager to fully deploy, then force a retry:
+
+```bash
+kubectl annotate helmrelease dorkomen -n flux-system \
+  reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
+```
+
 ### Force HelmRelease Retry
 
 If a HelmRelease fails, force a retry:
@@ -135,4 +148,12 @@ kubectl describe helmrelease <name> -n flux-system
 ```bash
 kubectl logs -n flux-system deployment/helm-controller --tail=50
 kubectl logs -n flux-system deployment/kustomize-controller --tail=50
+```
+
+### GitLab Runner Registration
+
+The GitLab Runner pod may show registration errors until GitLab is fully operational. The runner will automatically retry registration. If issues persist, check the runner logs:
+
+```bash
+kubectl logs -n gitlab-runner -l app=gitlab-runner --tail=50
 ```
