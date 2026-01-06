@@ -38,7 +38,7 @@ spec:
   interval: 5m
   url: https://github.com/solarhawk/base.git
   ref:
-    branch: dev/kustomize-overlays
+    branch: main
 EOF
 ```
 
