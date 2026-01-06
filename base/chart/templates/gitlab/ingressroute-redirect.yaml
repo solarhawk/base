@@ -10,6 +10,7 @@ metadata:
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
+    app.kubernetes.io/component: webservice
     {{- include "commonLabels" . | nindent 4 }}
 spec:
   entryPoints:
@@ -32,6 +33,7 @@ metadata:
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
+    app.kubernetes.io/component: registry
     {{- include "commonLabels" . | nindent 4 }}
 spec:
   entryPoints:
@@ -54,6 +56,7 @@ metadata:
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
+    app.kubernetes.io/component: minio
     {{- include "commonLabels" . | nindent 4 }}
 spec:
   entryPoints:
@@ -76,6 +79,7 @@ metadata:
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
+    app.kubernetes.io/component: kas
     {{- include "commonLabels" . | nindent 4 }}
 spec:
   entryPoints:
