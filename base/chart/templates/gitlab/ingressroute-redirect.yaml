@@ -1,6 +1,8 @@
 {{- if and .Values.gitlab.enabled (default true .Values.httpsRedirect) }}
 {{- $domainName := default .Values.domain .Values.hostname }}
+{{- $gitlabDomain := .Values.gitlab.values.global.hosts.domain | default $domainName }}
 ---
+# HTTP to HTTPS redirect for GitLab webservice
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -8,12 +10,13 @@ metadata:
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
+    app.kubernetes.io/component: webservice
     {{- include "commonLabels" . | nindent 4 }}
 spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`gitlab.{{ $domainName }}`)
+    - match: Host(`gitlab.{{ $gitlabDomain }}`)
       kind: Rule
       middlewares:
         - name: redirect-to-https
@@ -22,10 +25,11 @@ spec:
         - name: gitlab-webservice-default
           port: 8181
 ---
+# HTTP to HTTPS redirect for GitLab registry
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: registry-http-redirect
+  name: gitlab-registry-http-redirect
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
@@ -35,7 +39,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`registry.{{ $domainName }}`)
+    - match: Host(`registry.{{ $gitlabDomain }}`)
       kind: Rule
       middlewares:
         - name: redirect-to-https
@@ -44,10 +48,11 @@ spec:
         - name: gitlab-registry
           port: 5000
 ---
+# HTTP to HTTPS redirect for GitLab minio
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: minio-http-redirect
+  name: gitlab-minio-http-redirect
   namespace: gitlab
   labels:
     app.kubernetes.io/name: gitlab
@@ -57,7 +62,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`minio.{{ $domainName }}`)
+    - match: Host(`minio.{{ $gitlabDomain }}`)
       kind: Rule
       middlewares:
         - name: redirect-to-https
@@ -65,4 +70,27 @@ spec:
       services:
         - name: gitlab-minio-svc
           port: 9000
+---
+# HTTP to HTTPS redirect for GitLab KAS
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: gitlab-kas-http-redirect
+  namespace: gitlab
+  labels:
+    app.kubernetes.io/name: gitlab
+    app.kubernetes.io/component: kas
+    {{- include "commonLabels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`kas.{{ $gitlabDomain }}`)
+      kind: Rule
+      middlewares:
+        - name: redirect-to-https
+          namespace: gitlab
+      services:
+        - name: gitlab-kas
+          port: 8150
 {{- end }}

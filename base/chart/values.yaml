@@ -12,7 +12,7 @@
 # Domain for ingress/services
 domain: dorkomen.us
 
-# ClusterIssuer to use for certificates (e.g., "dorkomen-ca", "letsencrypt-staging", "letsencrypt-prod")
+# ClusterIssuer to use for certificates (e.g., "self-signed", "letsencrypt-staging", "letsencrypt-prod")
 clusterIssuer: letsencrypt-prod
 
 # Automatically redirect HTTP to HTTPS for all services
@@ -295,7 +295,7 @@ certManager:
     # Self-signed CA issuer (creates a CA that can sign other certs)
     selfSignedCA:
       enabled: true
-      name: dorkomen-ca
+      name: self-signed
       # Common name for the CA certificate
       commonName: "Dorkomen Root CA"
       # Duration of the CA certificate
@@ -856,7 +856,7 @@ elasticStack:
       className: traefik
       # host: kibana.dorkomen.local
       # tlsSecretName: kibana-tls
-      # issuerName: dorkomen-ca
+      # issuerName: self-signed
       # annotations: {}
     # config: {}
     # nodeSelector: {}
