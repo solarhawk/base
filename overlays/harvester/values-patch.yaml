@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------------------
 # UPDATE: Set your domain
 domain: yourdomain.local
-clusterIssuer: dorkomen-ca    # Or letsencrypt-prod for real certificates
+clusterIssuer: self-signed    # Or letsencrypt-prod for real certificates
 
 # -----------------------------------------------------------------------------
 # Ingress Controller (Traefik - Secondary)

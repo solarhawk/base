@@ -15,7 +15,7 @@ metadata:
 spec:
   secretName: {{ .Values.elasticStack.kibana.ingress.tlsSecretName | default "kibana-tls" }}
   issuerRef:
-    name: {{ .Values.elasticStack.kibana.ingress.issuerName | default .Values.clusterIssuer | default "dorkomen-ca" }}
+    name: {{ .Values.elasticStack.kibana.ingress.issuerName | default .Values.clusterIssuer | default "self-signed" }}
     kind: ClusterIssuer
   commonName: {{ .Values.elasticStack.kibana.ingress.host | default (printf "kibana.%s" $domainName) }}
   dnsNames:

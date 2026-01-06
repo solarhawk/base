@@ -224,8 +224,8 @@ Edit the appropriate overlay's `helmrelease-patch.yaml`:
 domain: yourdomain.local
 
 # Choose certificate issuer
-# Options: "dorkomen-ca" (self-signed), "letsencrypt-staging", "letsencrypt-prod"
-clusterIssuer: dorkomen-ca
+# Options: "self-signed", "letsencrypt-staging", "letsencrypt-prod"
+clusterIssuer: self-signed
 ```
 
 ### Enable/Disable Components
@@ -490,7 +490,7 @@ kubectl logs -n flux-system deployment/helm-controller
 
 ```bash
 kubectl get clusterissuers
-kubectl describe clusterissuer dorkomen-ca
+kubectl describe clusterissuer self-signed
 ```
 
 ### Check Certificates

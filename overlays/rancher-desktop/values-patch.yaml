@@ -9,7 +9,7 @@
 # Global Configuration
 # -----------------------------------------------------------------------------
 domain: dev.yourdomain.local
-clusterIssuer: dorkomen-ca
+clusterIssuer: self-signed
 
 # -----------------------------------------------------------------------------
 # Ingress Controller
