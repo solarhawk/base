@@ -13,6 +13,7 @@ metadata:
     checksum/dorkomen-values: {{ include (print $.Template.BasePath "/k6-operator/values.yaml") . | sha256sum }}
 spec:
   targetNamespace: k6-operator-system
+  releaseName: k6-operator
   chart:
     spec:
       {{- if eq .Values.k6Operator.sourceType "git" }}
