@@ -101,6 +101,9 @@ helmRepositories:
   - name: grafana
     repository: https://grafana.github.io/helm-charts
     type: default
+  - name: grafana-oci
+    repository: oci://ghcr.io/grafana/helm-charts
+    type: oci
 
 # -----------------------------------------------------------------------------
 # Network Policies
@@ -963,9 +966,9 @@ k6Operator:
   sourceType: "helmRepo"
 
   helmRepo:
-    repoName: grafana
+    repoName: grafana-oci
     chartName: k6-operator
-    tag: "3.10.0"
+    tag: "3.9.0"
     cosignVerify: false
 
   flux: {}
