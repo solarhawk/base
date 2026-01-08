@@ -1,12 +1,18 @@
 {{- if .Values.k6Operator.enabled }}
-{{- include "values-secret" (dict "root" $ "package" .Values.k6Operator "name" "k6-operator" "defaults" (include "dorkomen.defaults.k6Operator" .)) }}
+{{- include "values-secret" (dict "root" $ "package" .Values.k6Operator "name" "k6-operator" "defaults" (include "dorkomen.defaults.k6-operator" .)) }}
 {{- end }}
 
-{{- define "dorkomen.defaults.k6Operator" -}}
+{{- define "dorkomen.defaults.k6-operator" -}}
 # k6 Operator default values
 
-# Manager resources
+# Operator configuration
+namespace:
+  create: false
+
 manager:
+  image:
+    repository: ghcr.io/grafana/k6-operator
+    pullPolicy: {{ .Values.imagePullPolicy }}
   resources:
     limits:
       cpu: 200m
@@ -15,16 +21,13 @@ manager:
       cpu: 50m
       memory: 64Mi
 
-# Install CRDs
-installCRDs: true
+{{- if (include "imagePullSecret" .) }}
+imagePullSecrets:
+  - name: private-registry
+{{- end }}
 
-# RBAC configuration
-rbac:
-  create: true
-
-# Service account
-serviceAccount:
-  create: true
-  name: k6-operator
+# RBAC
+authProxy:
+  enabled: false
 
 {{- end -}}
