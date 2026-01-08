@@ -1,0 +1,30 @@
+{{- if .Values.k6Operator.enabled }}
+{{- include "values-secret" (dict "root" $ "package" .Values.k6Operator "name" "k6-operator" "defaults" (include "dorkomen.defaults.k6Operator" .)) }}
+{{- end }}
+
+{{- define "dorkomen.defaults.k6Operator" -}}
+# k6 Operator default values
+
+# Manager resources
+manager:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Install CRDs
+installCRDs: true
+
+# RBAC configuration
+rbac:
+  create: true
+
+# Service account
+serviceAccount:
+  create: true
+  name: k6-operator
+
+{{- end -}}

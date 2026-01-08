@@ -98,6 +98,9 @@ helmRepositories:
   - name: metallb
     repository: https://metallb.github.io/metallb
     type: default
+  - name: grafana
+    repository: https://grafana.github.io/helm-charts
+    type: default
 
 # -----------------------------------------------------------------------------
 # Network Policies
@@ -948,6 +951,35 @@ opentelemetryOperator:
         requests:
           cpu: 100m
           memory: 128Mi
+
+# -----------------------------------------------------------------------------
+# k6 Operator (Load Testing)
+# -----------------------------------------------------------------------------
+# Provides the k6 operator for running distributed load tests in Kubernetes
+# Creates TestRun CRD for defining and running k6 load tests
+k6Operator:
+  enabled: true
+
+  sourceType: "helmRepo"
+
+  helmRepo:
+    repoName: grafana
+    chartName: k6-operator
+    tag: "3.10.0"
+    cosignVerify: false
+
+  flux: {}
+  postRenderers: []
+
+  values:
+    manager:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION
