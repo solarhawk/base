@@ -27,9 +27,13 @@ spec:
       spec:
         serviceAccountName: elastic-agent
         automountServiceAccountToken: true
-        # hostNetwork disabled to allow cluster DNS resolution for kube-state-metrics
-        # hostNetwork: true
-        dnsPolicy: ClusterFirst
+        hostNetwork: true
+        dnsPolicy: ClusterFirstWithHostNet
+        dnsConfig:
+          searches:
+            - kube-system.svc.cluster.local
+            - svc.cluster.local
+            - cluster.local
         securityContext:
           runAsUser: 0
         containers:
