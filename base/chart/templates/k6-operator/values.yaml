@@ -5,13 +5,13 @@
 {{- define "dorkomen.defaults.k6-operator" -}}
 # k6 Operator default values
 
-# Operator configuration
+# Namespace configuration
 namespace:
   create: false
 
+# Manager (controller) configuration
 manager:
   image:
-    repository: ghcr.io/grafana/k6-operator
     pullPolicy: {{ .Values.imagePullPolicy }}
   resources:
     limits:
@@ -22,12 +22,10 @@ manager:
       memory: 64Mi
 
 {{- if (include "imagePullSecret" .) }}
-imagePullSecrets:
-  - name: private-registry
+global:
+  image:
+    pullSecrets:
+      - private-registry
 {{- end }}
-
-# RBAC
-authProxy:
-  enabled: false
 
 {{- end -}}
