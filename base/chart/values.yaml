@@ -968,7 +968,7 @@ k6Operator:
   helmRepo:
     repoName: grafana-oci
     chartName: k6-operator
-    tag: "3.9.1"
+    tag: "4.2.0"
     cosignVerify: false
 
   flux: {}
