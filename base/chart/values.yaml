@@ -104,6 +104,9 @@ helmRepositories:
   - name: grafana-oci
     repository: oci://ghcr.io/grafana/helm-charts
     type: oci
+  - name: prometheus-community
+    repository: https://prometheus-community.github.io/helm-charts
+    type: default
 
 # -----------------------------------------------------------------------------
 # Network Policies
@@ -983,6 +986,27 @@ k6Operator:
         requests:
           cpu: 50m
           memory: 64Mi
+
+# -----------------------------------------------------------------------------
+# Kube State Metrics
+# -----------------------------------------------------------------------------
+# Generates Prometheus-format metrics about the state of Kubernetes objects
+# Required for Elastic Agent kubernetes integration to collect cluster metrics
+kubeStateMetrics:
+  enabled: true
+
+  sourceType: "helmRepo"
+
+  helmRepo:
+    repoName: prometheus-community
+    chartName: kube-state-metrics
+    tag: "5.27.0"
+    cosignVerify: false
+
+  flux: {}
+  postRenderers: []
+
+  values: {}
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION
