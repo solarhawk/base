@@ -837,14 +837,15 @@ elasticStack:
     # storageClassName: ""
     disableTls: false
     # Heap should be ~50% of memory, max 31GB for compressed OOPs
-    javaOpts: "-Xms4g -Xmx4g"
+    # Override in environment-specific overlays (e.g., overlays/harvester)
+    javaOpts: "-Xms512m -Xmx512m"
     resources:
       limits:
-        memory: 8Gi
-        cpu: "4"
+        memory: 2Gi
+        cpu: 1000m
       requests:
-        memory: 4Gi
-        cpu: "2"
+        memory: 1Gi
+        cpu: 500m
     # config: {}
     # nodeSelector: {}
     # tolerations: []
