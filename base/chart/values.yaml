@@ -836,14 +836,15 @@ elasticStack:
     storage: 10Gi
     # storageClassName: ""
     disableTls: false
-    javaOpts: "-Xms512m -Xmx512m"
+    # Heap should be ~50% of memory, max 31GB for compressed OOPs
+    javaOpts: "-Xms4g -Xmx4g"
     resources:
       limits:
-        memory: 2Gi
-        cpu: 1000m
+        memory: 8Gi
+        cpu: "4"
       requests:
-        memory: 1Gi
-        cpu: 500m
+        memory: 4Gi
+        cpu: "2"
     # config: {}
     # nodeSelector: {}
     # tolerations: []
